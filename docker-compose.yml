@@ -5,16 +5,19 @@ services:
     image: coredns/coredns:latest
     container_name: hyper-dns
     hostname: dns
-    command: -conf /etc/coredns/Corefile
+    command: -conf /etc/coredns/Corefile -docker
     ports:
       - "5353:53/udp"
       - "5353:53/tcp"
     volumes:
       - ./coredns:/etc/coredns
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       hypernet:
         ipv4_address: 172.30.0.2
     restart: unless-stopped
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
 
   # Example web service
   web:

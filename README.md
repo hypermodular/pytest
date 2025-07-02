@@ -55,6 +55,69 @@ This setup provides DNS resolution **only within the Docker network**. To access
    # or open http://localhost:8081 in your browser (or your custom port from .env)
    ```
 
+## Traefik Setup with Automatic HTTPS
+
+This project includes Traefik as a reverse proxy with automatic HTTPS using Let's Encrypt. Here's how to set it up:
+
+### Prerequisites
+
+1. A domain name (e.g., `example.com`) that points to your server's public IP
+2. Ports 80 and 443 must be open in your firewall
+3. Docker and Docker Compose installed
+
+### Quick Start
+
+1. Copy the example environment file and update it with your details:
+   ```bash
+   cp .env.example .env
+   nano .env  # Edit the file with your details
+   ```
+
+2. Update these variables in `.env`:
+   ```env
+   TRAEFIK_DOMAIN=yourdomain.com
+   TRAEFIK_EMAIL=your.email@example.com
+   ENABLE_HTTPS=true
+   ```
+
+3. Start Traefik and your services:
+   ```bash
+   make traefik-up
+   ```
+
+4. Access your services:
+   - Web service: `https://yourdomain.com`
+   - Traefik dashboard: `https://traefik.yourdomain.com`
+
+### How It Works
+
+- Traefik automatically obtains SSL certificates from Let's Encrypt
+- All HTTP traffic is automatically redirected to HTTPS
+- The dashboard provides visibility into your services and routing
+
+### Managing Traefik
+
+- Start Traefik: `make traefik-up`
+- Stop Traefik: `make traefik-down`
+- View logs: `make traefik-logs`
+- Open dashboard: `make traefik-dashboard`
+
+### Adding New Services
+
+To add a new service with HTTPS support, add these labels to your service in `docker-compose.traefik.yml`:
+
+```yaml
+services:
+  myservice:
+    # ... other config ...
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.myservice.rule=Host(`service.${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.routers.myservice.entrypoints=websecure"
+      - "traefik.http.routers.myservice.tls.certresolver=leresolver"
+      - "traefik.http.services.myservice.loadbalancer.server.port=8080"
+```
+
 ## Configuration
 
 ### Environment Variables

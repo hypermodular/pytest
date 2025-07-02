@@ -1,0 +1,33 @@
+services:
+  local-dns:
+    build: ./path_to_dns_image
+    ports:
+      - "53:53/udp"
+      - "53:53/tcp"
+    networks:
+      - hypernet
+
+  server:
+    image: your-server-image
+    networks:
+      - hypernet
+    dns:
+      - local-dns
+
+  client:
+    image: your-client-image
+    networks:
+      - hypernet
+    dns:
+      - local-dns
+
+  hypermodular-tests:
+    image: your-tests-image
+    depends_on:
+      - local-dns
+      - server
+      - client
+    networks:
+      - hypernet
+    dns:
+      - local-dns

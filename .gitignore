@@ -1,16 +1,8 @@
-.index
-.idea
-venv
-
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[codz]
 *$py.class
-
-# C extensions
 *.so
-
-# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -24,30 +16,51 @@ parts/
 sdist/
 var/
 wheels/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
+# Docker
+.dockerignore
+*.dockerignore
+.docker/
+/hosts
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
 
-# Unit test / coverage reports
+# Local development
+.env
+*.log
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Testing
+.coverage
 htmlcov/
+.pytest_cache/
+.nox/
 .tox/
 .nox/
 .coverage
 .coverage.*
 .cache
 nosetests.xml
+
+# Project specific
+hosts
+.index
 coverage.xml
 *.cover
 *.py.cover

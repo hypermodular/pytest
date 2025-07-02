@@ -1,0 +1,9 @@
+. {
+    hosts /hosts {
+        fallthrough
+    }
+    reload 1s
+    log
+    errors
+    cache 30
+}

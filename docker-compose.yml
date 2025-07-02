@@ -1,33 +1,33 @@
+version: '3.8'
+
 services:
   local-dns:
-    build: ./path_to_dns_image
+    build: .
+    container_name: hyper-dns
     ports:
       - "53:53/udp"
       - "53:53/tcp"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
-      - hypernet
+      hypernet:
+        aliases:
+          - dns
+    restart: unless-stopped
 
+  # Example service - customize as needed
   server:
-    image: your-server-image
+    image: nginx:alpine
+    container_name: example-server
     networks:
-      - hypernet
+      hypernet:
     dns:
       - local-dns
+    restart: unless-stopped
 
-  client:
-    image: your-client-image
-    networks:
-      - hypernet
-    dns:
-      - local-dns
+  # Add more services as needed
 
-  hypermodular-tests:
-    image: your-tests-image
-    depends_on:
-      - local-dns
-      - server
-      - client
-    networks:
-      - hypernet
-    dns:
-      - local-dns
+networks:
+  hypernet:
+    driver: bridge
+    name: hypermodular_net

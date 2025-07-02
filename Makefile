@@ -1,7 +1,7 @@
 .PHONY: help build up down logs clean test restart
 
 # Variables
-SERVICE_NAME=local-dns
+SERVICE_NAME=dns
 DOCKER_COMPOSE=docker-compose
 
 # Help
@@ -27,7 +27,8 @@ logs: ## View logs from all services
 ##@ Testing
 
 test: ## Run tests
-	$(DOCKER_COMPOSE) run --rm hypermodular-tests
+	@echo "Testing DNS resolution..."
+	@docker run --rm --dns=172.20.0.2 alpine nslookup example.local
 
 ##@ Maintenance
 
@@ -40,7 +41,7 @@ docker-clean: ## Remove all stopped containers and unused images
 
 ##@ Debugging
 
-shell: ## Open a shell in the local-dns container
+shell: ## Open a shell in the dns container
 	$(DOCKER_COMPOSE) exec $(SERVICE_NAME) sh
 
 status: ## Show status of containers
@@ -53,8 +54,7 @@ reload-dns: ## Force reload of DNS configuration
 
 check-dns: ## Check DNS resolution
 	@echo "Testing DNS resolution..."
-	@docker run --rm --dns=$$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(SERVICE_NAME)) \
-		alpine nslookup server || (echo "DNS resolution failed"; exit 1)
+	@docker run --rm --dns=172.20.0.2 alpine nslookup example.local || (echo "DNS resolution failed"; exit 1)
 
 ##@ Documentation
 

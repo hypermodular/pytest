@@ -1,33 +1,40 @@
 version: '3.8'
 
 services:
-  local-dns:
-    build: .
+  dns:
+    image: coredns/coredns:latest
     container_name: hyper-dns
+    hostname: dns
+    command: -conf /etc/coredns/Corefile
     ports:
-      - "53:53/udp"
-      - "53:53/tcp"
+      - "5353:53/udp"
+      - "5353:53/tcp"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./coredns:/etc/coredns
     networks:
       hypernet:
-        aliases:
-          - dns
+        ipv4_address: 172.30.0.2
     restart: unless-stopped
 
-  # Example service - customize as needed
-  server:
+  # Example web service
+  web:
     image: nginx:alpine
-    container_name: example-server
+    container_name: example-web
+    expose:
+      - "80"
+    environment:
+      - VIRTUAL_HOST=example.local
     networks:
       hypernet:
-    dns:
-      - local-dns
+    dns: 172.20.0.2
+    depends_on:
+      - dns
     restart: unless-stopped
-
-  # Add more services as needed
 
 networks:
   hypernet:
     driver: bridge
-    name: hypermodular_net
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.30.0.0/24

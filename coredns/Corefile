@@ -1,0 +1,22 @@
+# Basic CoreDNS configuration
+. {
+    # Use the hosts plugin with the generated hosts file
+    hosts /etc/coredns/hosts {
+        fallthrough
+    }
+    
+    # Basic logging
+    log
+    
+    # Error handling
+    errors
+    
+    # Cache responses
+    cache 30
+    
+    # Simple health check
+    health
+    
+    # Forward to system DNS if no match found
+    forward . /etc/resolv.conf
+}

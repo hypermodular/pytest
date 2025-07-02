@@ -1,9 +1,30 @@
+# Corefile for CoreDNS with docker-gen integration
 . {
-    hosts /hosts {
+    # Use the hosts plugin to read from the generated hosts file
+    hosts /etc/coredns/hosts {
         fallthrough
     }
-    reload 1s
+    
+    # Enable logging
     log
+    
+    # Handle errors
     errors
+    
+    # Enable caching
     cache 30
+    
+    # Enable health check endpoint
+    health :8080 {
+        lameduck 5s
+    }
+    
+    # Enable metrics
+    prometheus :9153
+    
+    # Enable debug endpoint
+    debug
+    
+    # Forward all other queries to system DNS
+    forward . /etc/resolv.conf
 }

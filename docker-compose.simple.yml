@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  dns:
+    image: alpine:3.18
+    command: sleep infinity
+    container_name: test-dns
+    networks:
+      - hypernet
+
+networks:
+  hypernet:
+    driver: bridge

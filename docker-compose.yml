@@ -1,41 +1,31 @@
 version: '3.8'
 
 services:
-  dns:
-    image: jpillora/dnsmasq:latest
-    container_name: hyper-dns
-    hostname: dns
-    ports:
-      - "53:53/udp"
-      - "53:53/tcp"
-    volumes:
-      - ./dnsmasq/dnsmasq.conf:/etc/dnsmasq.conf
-    cap_add:
-      - NET_ADMIN
-    networks:
-      hypernet:
-        ipv4_address: 172.30.0.2
-    restart: unless-stopped
-
-  # Example web service
   web:
     image: nginx:alpine
     container_name: example-web
+    hostname: example-web
+    ports:
+      - "8081:80"
     expose:
       - "80"
-    environment:
-      - VIRTUAL_HOST=example.local
     networks:
-      hypernet:
-    dns: 172.20.0.2
+      app_net:
+        aliases:
+          - example.local
+    restart: unless-stopped
+
+  test-client:
+    image: alpine:latest
+    container_name: test-client
+    command: tail -f /dev/null
+    networks:
+      - app_net
     depends_on:
-      - dns
+      - web
     restart: unless-stopped
 
 networks:
-  hypernet:
+  app_net:
     driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.30.0.0/24
+    name: my_custom_network

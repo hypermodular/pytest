@@ -1,7 +1,14 @@
 .PHONY: help build up down logs clean test restart
 
+# Include .env file if it exists
+-include .env
+
+# Set default values if not defined in .env
+WEB_PORT ?= 8081
+CONTAINER_PORT ?= 80
+
 # Variables
-DOCKER_COMPOSE=docker-compose
+DOCKER_COMPOSE = docker-compose
 
 # Help
 help: ## Display this help
@@ -9,7 +16,15 @@ help: ## Display this help
 
 ##@ Development
 
-up: ## Start all services in detached mode
+init: ## Copy .env.example to .env if it doesn't exist
+	@if [ ! -f .env ]; then \
+		echo "Creating .env file from .env.example"; \
+		cp .env.example .env; \
+	else \
+		echo ".env file already exists"; \
+	fi
+
+up: init ## Start all services in detached mode
 	$(DOCKER_COMPOSE) up -d
 
 down: ## Stop and remove all containers
@@ -46,7 +61,12 @@ status: ## Show status of containers
 ##@ Web Access
 
 web: ## Open web interface in default browser
-	xdg-open http://localhost:8081 || open http://localhost:8081
+	@if [ -z "$(WEB_PORT)" ]; then \
+		echo "WEB_PORT is not set in .env file"; \
+		exit 1; \
+	fi
+	@echo "Opening http://localhost:$(WEB_PORT) in your browser..."
+	@xdg-open http://localhost:$(WEB_PORT) 2>/dev/null || open http://localhost:$(WEB_PORT) 2>/dev/null || echo "Could not open browser. Please visit http://localhost:$(WEB_PORT) manually"
 
 reload-dns: ## Force reload of DNS configuration
 	$(DOCKER_COMPOSE) kill -s SIGHUP $(SERVICE_NAME)

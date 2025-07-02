@@ -1,52 +1,110 @@
-# Hypermodular DNS Solution with CoreDNS and docker-gen
+# Docker DNS and Web Service Example
 
-A modular and scalable DNS management solution tailored for Docker-based test and dev environments. Combine power, automation, and simplicity — all in a single containerized service.
-
-> **Boost your development, test automation, and environment integration with a low-maintenance DNS layer.**
-
----
-
-## Table of Contents
-
-* [Overview](#overview)
-* [Features](#features)
-* [Use Cases](#use-cases)
-* [Architecture](#architecture)
-* [Modules](#modules)
-* [Prerequisites](#prerequisites)
-* [Installation](#installation)
-* [Usage](#usage)
-* [Configuration](#configuration)
-* [Integration](#integration)
-* [Building the Image](#building-the-image)
-* [Advantages](#advantages)
-* [Troubleshooting](#troubleshooting)
-* [Roadmap](#roadmap)
-* [License](#license)
-
----
-
-## Overview
-
-**Hypermodular DNS** is a low-code/no-code DNS automation solution for containerized environments.
-
-It combines:
-
-* **CoreDNS** for DNS resolution
-* **docker-gen** for automatic hostfile generation
-
-All packed into **one lightweight container**, streamlining your development and test environments without sacrificing flexibility or control.
-
----
+This project demonstrates a simple setup with a web service and automatic DNS resolution between containers using Docker's built-in networking.
 
 ## Features
 
-* 🔧 **Single Container**: CoreDNS + docker-gen in one image
-* 📦 **Dynamic DNS**: Automatic resolution of running Docker containers
-* 💡 **Low-Code Configuration**: Easy templating and setup
-* 🌐 **Multi-Network Support**: Handles containers across isolated networks
-* 🔒 **Secure & Lightweight**: No unnecessary overhead
-* 📈 **Scalable & Modular**: Adaptable to various CI/CD or local environments
+- Nginx web server accessible at `http://localhost:8081`
+- Automatic DNS resolution between containers
+- Custom domain aliases (e.g., `example.local`)
+- Test client container for debugging
+- Automated tests for DNS resolution and service accessibility
+
+## Prerequisites
+
+- Docker
+- Docker Compose
+
+## Getting Started
+
+1. Copy the example environment file and customize it if needed:
+   ```bash
+   cp .env.example .env
+   # Edit .env to change port settings if needed
+   ```
+
+2. Start the services:
+   ```bash
+   make up
+   # This will automatically create .env if it doesn't exist
+   ```
+
+3. Access the web service:
+   ```bash
+   make web
+   # or open http://localhost:8081 in your browser (or your custom port from .env)
+   ```
+
+## Configuration
+
+You can customize the following settings in the `.env` file:
+
+- `WEB_PORT`: The host port that will be mapped to the web container (default: 8081)
+- `CONTAINER_PORT`: The internal port exposed by the web container (default: 80)
+
+Example `.env` file:
+```env
+# Web service port mapping
+WEB_PORT=8081
+
+# Internal container port (should match the service's exposed port)
+CONTAINER_PORT=80
+```
+
+## Project Structure
+
+```
+.
+├── docker-compose.yml    # Docker Compose configuration
+├── Makefile             # Common tasks
+├── README.md            # This file
+├── scripts/             # Utility scripts
+└── tests/               # Test scripts
+    └── test_dns.sh      # DNS and service tests
+```
+
+## Available Commands
+
+- `make up` - Start all services
+- `make down` - Stop and remove all containers
+- `make test` - Run DNS and service tests
+- `make shell` - Open a shell in the test client container
+- `make logs` - View container logs
+- `make status` - Show container status
+- `make clean` - Clean up Docker resources
+
+## Testing
+
+Run the test suite to verify DNS resolution and service accessibility:
+
+```bash
+make test
+```
+
+## Accessing Services
+
+- Web service: http://localhost:${WEB_PORT:-8081} (customize in .env)
+- From within the Docker network:
+  - `http://example-web`
+  - `http://example.local`
+
+## Troubleshooting
+
+If you encounter port conflicts, you can check which process is using a port:
+
+```bash
+lsof -i :8081  # Check what's using port 8081
+```
+
+To clean up all Docker resources:
+
+```bash
+make clean
+```
+
+## License
+
+MIT
 
 ---
 

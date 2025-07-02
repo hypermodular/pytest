@@ -1,14 +1,34 @@
 # Docker DNS and Web Service Example
 
-This project demonstrates a simple setup with a web service and automatic DNS resolution between containers using Docker's built-in networking.
+This project demonstrates a simple setup with a web service and automatic DNS resolution between containers using Docker's built-in networking. It allows you to use custom domain names locally within your Docker environment.
+
+## ⚠️ Important Note About Local DNS
+
+This setup provides DNS resolution **only within the Docker network**. To access these domains from your host machine or local network, you have two options:
+
+1. **For host machine access only**:
+   - Add entries to your `/etc/hosts` file (Linux/macOS) or `C:\Windows\System32\drivers\etc\hosts` (Windows)
+   - Example:
+     ```
+     127.0.0.1 example.local
+     ```
+
+2. **For network-wide access**:
+   - Set up a local DNS server (like dnsmasq) on your host machine
+   - Configure your router to use this DNS server
+   - This is more complex but allows all devices on your network to resolve the custom domains
 
 ## Features
 
-- Nginx web server accessible at `http://localhost:8081`
-- Automatic DNS resolution between containers
-- Custom domain aliases (e.g., `example.local`)
-- Test client container for debugging
-- Automated tests for DNS resolution and service accessibility
+- 🚀 Nginx web server accessible at `http://localhost:${WEB_PORT:-8081}` (customize in .env)
+- 🔄 Automatic DNS resolution between containers
+- 🌐 Custom domain aliases (e.g., `example.local`)
+- 🧪 Test client container for debugging
+- ✅ Automated tests for DNS resolution and service accessibility
+- 🐳 No custom Docker images needed - uses official images directly
+- ⚙️ Easy configuration via environment variables
+- 🔄 Automatic container restarts on failure
+- 🔒 Isolated network for services
 
 ## Prerequisites
 
@@ -37,10 +57,14 @@ This project demonstrates a simple setup with a web service and automatic DNS re
 
 ## Configuration
 
-You can customize the following settings in the `.env` file:
+### Environment Variables
 
-- `WEB_PORT`: The host port that will be mapped to the web container (default: 8081)
-- `CONTAINER_PORT`: The internal port exposed by the web container (default: 80)
+Customize the following settings in the `.env` file:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `WEB_PORT` | Host port mapped to the web container | `8081` |
+| `CONTAINER_PORT` | Internal port exposed by the web container | `80` |
 
 Example `.env` file:
 ```env
@@ -50,6 +74,46 @@ WEB_PORT=8081
 # Internal container port (should match the service's exposed port)
 CONTAINER_PORT=80
 ```
+
+### DNS Configuration
+
+The setup uses Docker's built-in DNS server for container name resolution. To add custom domains:
+
+1. Edit `docker-compose.yml` and add aliases under the service's network configuration:
+   ```yaml
+   services:
+     web:
+       # ... other config ...
+       networks:
+         app_net:
+           aliases:
+             - example.local
+             - myservice.local
+   ```
+
+2. Restart the services:
+   ```bash
+   make down
+   make up
+   ```
+
+### Accessing Services from Host
+
+To access services using custom domains from your host machine:
+
+1. **Temporary solution** (edits required after each IP change):
+   ```bash
+   # Linux/macOS
+   echo "127.0.0.1 example.local" | sudo tee -a /etc/hosts
+   
+   # Windows (Run as Administrator)
+   # Add to C:\Windows\System32\drivers\etc\hosts:
+   # 127.0.0.1 example.local
+   ```
+
+2. **Permanent solution** (recommended for development):
+   - Use a local DNS server like dnsmasq
+   - Or use a tool like `traefik` or `nginx-proxy` for automatic DNS resolution
 
 ## Project Structure
 
@@ -83,10 +147,30 @@ make test
 
 ## Accessing Services
 
+### From Your Host Machine
 - Web service: http://localhost:${WEB_PORT:-8081} (customize in .env)
-- From within the Docker network:
-  - `http://example-web`
-  - `http://example.local`
+- With custom domain (requires hosts file entry):
+  - `http://example.local:${WEB_PORT:-8081}`
+
+### From Within the Docker Network
+- Using container name: `http://example-web`
+- Using custom domain: `http://example.local`
+
+### Testing DNS Resolution
+
+Use the test client to verify DNS resolution:
+```bash
+# Get a shell in the test container
+make shell
+
+# Test DNS resolution
+ping example-web
+ping example.local
+
+# Test HTTP access
+curl http://example-web
+curl http://example.local
+```
 
 ## Troubleshooting
 
